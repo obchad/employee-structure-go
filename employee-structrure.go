@@ -16,19 +16,6 @@ type Employee struct {
 }
 
 
-//func (employee Employee) toString() string {
-//	return toJson(employee)
-//}
-//
-//func toJson(employee interface{}) string {
-//	bytes, err := json.Marshal(employee)
-//	if err != nil {
-//		fmt.Println(err.Error())
-//		os.Exit(1)
-//	}
-//
-//	return string(bytes)
-//}
 
 func getEmployees() []Employee {
 	raw, err := ioutil.ReadFile("./employee-data.json")
