@@ -1,0 +1,50 @@
+// --------------------
+// node is a super simple node struct that will form the tree
+type node struct {
+	parent   *node
+	children []*node
+	depth    int
+}
+
+// buildTree will construct the tree for walking.
+// note that the math here is:
+// total = (rootsChildren * childrenChildren) + rootChildren + 1
+func buildTree() *node {
+	var root node
+	root.addChildren(rootsChildren)
+	for _, child := range root.children {
+		child.addChildren(childrenChildren)
+	}
+	return &root
+}
+
+// addChildren is a convenience to add an arbitrary number of children
+func (n *node) addChildren(count int) {
+	for i := 0; i < count; i++ {
+		newChild := &node{
+			parent: n,
+			depth:  n.depth + 1,
+		}
+		n.children = append(n.children, newChild)
+	}
+}
+
+// walk is a recursive function that calls itself for every child
+func (n *node) walk() {
+	n.visit()
+	for _, child := range n.children {
+		child.walk()
+	}
+}
+
+// visit will get called on every node in the tree.
+func (n *node) visit() {
+	d := "└"
+	for i := 0; i <= n.depth; i++ {
+		d = d + "───"
+	}
+	fmt.Printf("%s Visiting node with address %p and parent %p Total (%d)\n", d, n, n.parent, total)
+	total = total + 1
+}
+
+// --------------------

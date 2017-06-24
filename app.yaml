@@ -1,0 +1,6 @@
+# runtime: go
+#cenv: flex
+#capi_version: 1
+
+# env_variables:
+#  OAUTH2_CALLBACK: https://TODO/oauth2callback
