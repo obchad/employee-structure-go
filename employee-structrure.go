@@ -16,19 +16,19 @@ type Employee struct {
 }
 
 
-func (employee Employee) toString() string {
-	return toJson(employee)
-}
-
-func toJson(employee interface{}) string {
-	bytes, err := json.Marshal(employee)
-	if err != nil {
-		fmt.Println(err.Error())
-		os.Exit(1)
-	}
-
-	return string(bytes)
-}
+//func (employee Employee) toString() string {
+//	return toJson(employee)
+//}
+//
+//func toJson(employee interface{}) string {
+//	bytes, err := json.Marshal(employee)
+//	if err != nil {
+//		fmt.Println(err.Error())
+//		os.Exit(1)
+//	}
+//
+//	return string(bytes)
+//}
 
 func getEmployees() []Employee {
 	raw, err := ioutil.ReadFile("./employee-data.json")
@@ -86,24 +86,10 @@ func handler(w http.ResponseWriter, r *http.Request) {
 				}
 
 			}
-			//fmt.Fprintf(w, "\n Managers: " + toJson(getEmployeesForId(emp.Id)))
 
 		}
 
-		// Console Output
-		//fmt.Println(emp.toString())
-
-		// Web output
-		//fmt.Fprintf(w, emp.toString())
 	}
-
-	// Console Output
-	//fmt.Println(toJson(employees))
-
-	// Web Output
-	//fmt.Fprintf(w, toJson(employees))
-
-	//fmt.Fprintf(w, "\n" + toJson(getEmployeesForManagerId(400)))
 
 }
 
