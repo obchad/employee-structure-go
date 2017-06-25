@@ -77,24 +77,31 @@ func isEmployeeOK(emp Employee, w http.ResponseWriter) bool {
 // The HTTP url handler
 func handler(w http.ResponseWriter, r *http.Request) {
 
-	fmt.Fprintf(w, "\n The errors version \n\n")
-
 	employees := getEmployees()
+	var numberOfEmployees int = len(employees)
+	fmt.Println("INFO: Number of employees in dataset: ", numberOfEmployees)
+
+	// We want to report on the number or orphaned employees
+	var numberOfDisplayedEmployeesCounter = 0
+
 	for _, emp := range employees {
 
 		if emp.ManagerId == 0 {
 			if isEmployeeOK(emp, w) {
 				fmt.Fprintf(w, "\n CEO: " + emp.EmployeeName)
+				numberOfDisplayedEmployeesCounter++
 			}
 			var managers = getEmployeesForId(emp.Id)
 			for _, mngs := range managers {
 				if isEmployeeOK(emp, w) {
 					fmt.Fprintf(w, "\n\t Managers: " + mngs.EmployeeName)
+					numberOfDisplayedEmployeesCounter++
 				}
 				var minions = getEmployeesForId(mngs.Id)
 				for _, m := range minions {
 					if isEmployeeOK(m, w) {
 						fmt.Fprintf(w, "\n\t\t Minions: " + m.EmployeeName)
+						numberOfDisplayedEmployeesCounter++
 					}
 				}
 				// If we needed to go deeper than 3 levels deep then I would start looking at parent
@@ -104,6 +111,12 @@ func handler(w http.ResponseWriter, r *http.Request) {
 				// provided ie does it need to be flexible to handle more than 3 levels or is 3 ok.
 			}
 		}
+	}
+	// Console
+	fmt.Println("INFO: Number of employees displayed: %s ", numberOfDisplayedEmployeesCounter)
+
+	if numberOfEmployees > numberOfDisplayedEmployeesCounter {
+		fmt.Fprintf(w,"\n\n You have orphaned employees in you dataset.  ")
 	}
 	fmt.Fprintf(w, "\n\n\n A copy of the input dataset can be found here: \n" + "https://storage.googleapis.com/nab-momenton-employee-datasets/employee-data.json\n\n")
 	//fmt.Fprintf(w, "\n\n\n A copy of the input dataset can be found here: \n" + "https://storage.googleapis.com/nab-momenton-employee-datasets/employee-data-testing-with-errors.json\n\n")
