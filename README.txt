@@ -3,6 +3,8 @@ Written by: Chad OBrien
 I have included the GOLOANG code here.  I started learning GO a couple of weeks ago and thought this would be a
 good opportunity to use instead of Java.
 
+The important file to look at is employee-structrure.go.
+
 I am hosting this app in Googles Appengine for you here:
 https://nab-momenton-coding-challenge.appspot.com/
 
