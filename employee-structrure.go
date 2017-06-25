@@ -1,5 +1,10 @@
 package main
 
+// Written by Chad OBrien
+// I started learning GO a couple of weeks ago and saw this as an opportunity to write in GO rather than
+// Java.
+//  I have it hosted as a google app at https://nab-momenton-coding-challenge.appspot.com/
+
 import (
 	"encoding/json"
 	"fmt"
@@ -8,15 +13,17 @@ import (
 	"os"
 )
 
+// Employee object, loaded from a JSON file.
 type Employee struct {
 	EmployeeName string `json:"name"`
 	Id           int    `json:"id"`
 	ManagerId    int    `json:"managerid"`
 }
 
+// Get the employees from a JSON file.
 func getEmployees() []Employee {
-	//raw, err := ioutil.ReadFile("./employee-data.json")
-	raw, err := ioutil.ReadFile("./employee-data-testing-with-errors.json")
+	raw, err := ioutil.ReadFile("./employee-data.json")
+	//raw, err := ioutil.ReadFile("./employee-data-testing-with-errors.json")
 
 	if err != nil {
 		fmt.Println(err.Error())
@@ -48,50 +55,66 @@ func getEmployeesForId(managerId int) []Employee {
 	return minions
 }
 
-func isEmployeeOK(emp Employee) bool {
+func isEmployeeOK(emp Employee, w http.ResponseWriter) bool {
 
-	// check for errors first.  Will just report on them and carry on.  No need to crash the whole thing.
+	// Check for errors first.
+	// Will just report on them and carry on.  No need to crash the whole thing.
+	// I am outputting the console errors to the screen so you can see them easily even though it is ugly.
+	// Otherwise I would ignore thos entries on the screen.
 	switch {
 	case emp.Id == 0:
-		fmt.Println("\nERROR: Employee ID mssing: " + emp.toString())
+		//fmt.Println("\nERROR: Employee ID mssing: " + emp.toString())
+		fmt.Fprintf(w, "\n ----- Ugly ERROR message: Employee ID mssing: " + emp.toString())
 		return false
 	case emp.EmployeeName == "":
-		fmt.Println("\nERROR: Employee name missing: " + emp.toString())
+		//fmt.Println("\nERROR: Employee name missing: " + emp.toString())
+		fmt.Fprintf(w, "\n ----- Ugly ERROR message: Employee name missing: " + emp.toString())
 		return false
 	}
 	return true
 }
 
+// The HTTP url handler
 func handler(w http.ResponseWriter, r *http.Request) {
+
+	fmt.Fprintf(w, "\n The errors version \n\n")
 
 	employees := getEmployees()
 	for _, emp := range employees {
 
 		if emp.ManagerId == 0 {
-			if isEmployeeOK(emp) {
+			if isEmployeeOK(emp, w) {
 				fmt.Fprintf(w, "\n CEO: " + emp.EmployeeName)
 			}
 			var managers = getEmployeesForId(emp.Id)
 			for _, mngs := range managers {
-				if isEmployeeOK(emp) {
+				if isEmployeeOK(emp, w) {
 					fmt.Fprintf(w, "\n\t Managers: " + mngs.EmployeeName)
 				}
 				var minions = getEmployeesForId(mngs.Id)
 				for _, m := range minions {
-					if isEmployeeOK(m) {
+					if isEmployeeOK(m, w) {
 						fmt.Fprintf(w, "\n\t\t Minions: " + m.EmployeeName)
 					}
 				}
+				// If we needed to go deeper than 3 levels deep then I would start looking at parent
+				// child tree implementation to handle infinite depth.  This takes more time
+				// for me to do.  I have stuck to 3 levels here and to save time.
+				// Ideally I would go back to the client and ask for more information on the spec
+				// provided ie does it need to be flexible to handle more than 3 levels or is 3 ok.
 			}
 		}
 	}
 	fmt.Fprintf(w, "\n\n\n A copy of the input dataset can be found here: \n" + "https://storage.googleapis.com/nab-momenton-employee-datasets/employee-data.json\n\n")
+	//fmt.Fprintf(w, "\n\n\n A copy of the input dataset can be found here: \n" + "https://storage.googleapis.com/nab-momenton-employee-datasets/employee-data-testing-with-errors.json\n\n")
 }
 
+// A tostring function for my error console outputs
 func (employee Employee) toString() string {
 	return toJson(employee)
 }
 
+// A toJson function for my error console outputs
 func toJson(employee interface{}) string {
 	bytes, err := json.Marshal(employee)
 	if err != nil {
@@ -103,6 +126,8 @@ func toJson(employee interface{}) string {
 }
 
 func main() {
+	// if run locally see localhost:8080
+	//  I have it hosted as a google app at https://nab-momenton-coding-challenge.appspot.com/
 	http.HandleFunc("/", handler)
 	http.ListenAndServe(":8080", nil)
 }
