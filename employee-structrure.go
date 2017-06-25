@@ -8,17 +8,15 @@ import (
 	"os"
 )
 
-
 type Employee struct {
 	EmployeeName string `json:"name"`
 	Id           int    `json:"id"`
 	ManagerId    int    `json:"managerid"`
 }
 
-
-
 func getEmployees() []Employee {
-	raw, err := ioutil.ReadFile("./employee-data.json")
+	//raw, err := ioutil.ReadFile("./employee-data.json")
+	raw, err := ioutil.ReadFile("./employee-data-testing-with-errors.json")
 
 	if err != nil {
 		fmt.Println(err.Error())
@@ -50,34 +48,58 @@ func getEmployeesForId(managerId int) []Employee {
 	return minions
 }
 
+func isEmployeeOK(emp Employee) bool {
+
+	// check for errors first.  Will just report on them and carry on.  No need to crash the whole thing.
+	switch {
+	case emp.Id == 0:
+		fmt.Println("\nERROR: Employee ID mssing: " + emp.toString())
+		return false
+	case emp.EmployeeName == "":
+		fmt.Println("\nERROR: Employee name missing: " + emp.toString())
+		return false
+	}
+	return true
+}
+
 func handler(w http.ResponseWriter, r *http.Request) {
-	//fmt.Fprintf(w, "Hi there, I love %s!", r.URL.Path[1:])
 
 	employees := getEmployees()
 	for _, emp := range employees {
 
 		if emp.ManagerId == 0 {
-
-			fmt.Fprintf(w, "\n Ceo: " + emp.EmployeeName)
-
-			var managers = getEmployeesForId(emp.Id)
-
-			for _, mngs := range managers {
-				fmt.Fprintf(w, "\n\t Managers: " + mngs.EmployeeName)
-
-				var minions = getEmployeesForId(mngs.Id)
-
-				for _, m := range minions  {
-					fmt.Fprintf(w, "\n\t\t Minions: " + m.EmployeeName)
-
-				}
-
+			if isEmployeeOK(emp) {
+				fmt.Fprintf(w, "\n CEO: " + emp.EmployeeName)
 			}
-
+			var managers = getEmployeesForId(emp.Id)
+			for _, mngs := range managers {
+				if isEmployeeOK(emp) {
+					fmt.Fprintf(w, "\n\t Managers: " + mngs.EmployeeName)
+				}
+				var minions = getEmployeesForId(mngs.Id)
+				for _, m := range minions {
+					if isEmployeeOK(m) {
+						fmt.Fprintf(w, "\n\t\t Minions: " + m.EmployeeName)
+					}
+				}
+			}
 		}
+	}
+	fmt.Fprintf(w, "\n\n\n A copy of the input dataset can be found here: \n" + "https://storage.googleapis.com/nab-momenton-employee-datasets/employee-data.json\n\n")
+}
 
+func (employee Employee) toString() string {
+	return toJson(employee)
+}
+
+func toJson(employee interface{}) string {
+	bytes, err := json.Marshal(employee)
+	if err != nil {
+		fmt.Println(err.Error())
+		os.Exit(1)
 	}
 
+	return string(bytes)
 }
 
 func main() {
